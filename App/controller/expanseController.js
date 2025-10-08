@@ -1,15 +1,23 @@
 const Expense = require("../models/models.js"); // make sure this path is correct
 
 // Insert Expense
+
+
+
 const expenseInsert = async (req, res) => {
   try {
-    const { amount, category, date } = req.body;
-    const expense = new Expense({ 
-      amount, 
-      category, 
-      date, 
-      user: req.user.id // associate expense with logged-in user
+    const { amount, category, date, description, type, group } = req.body;
+
+    const expense = new Expense({
+      amount,
+      category,
+      description,
+      type: type || "spent",
+      group: group || "Personal",
+      date,
+      user: req.user.id,
     });
+
     const data = await expense.save();
 
     res.status(200).json({
@@ -25,6 +33,93 @@ const expenseInsert = async (req, res) => {
     });
   }
 };
+
+
+const expenseFilter = async (req, res) => {
+  try {
+    const { period, category, type, group } = req.query;
+    const query = { user: req.user.id };
+
+    // Filter by type (spent/received)
+    if (type) query.type = type;
+
+    // Filter by category
+    if (category) query.category = category;
+
+    // Filter by group
+    if (group) query.group = group;
+
+    // Filter by time period
+    const now = new Date();
+    if (period === "day") {
+      query.date = {
+        $gte: new Date(now.setHours(0, 0, 0, 0)),
+        $lte: new Date(),
+      };
+    } else if (period === "week") {
+      const startOfWeek = new Date();
+      startOfWeek.setDate(now.getDate() - 7);
+      query.date = { $gte: startOfWeek, $lte: new Date() };
+    } else if (period === "month") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      query.date = { $gte: startOfMonth, $lte: new Date() };
+    }
+
+    const expenses = await Expense.find(query).sort({ date: -1 });
+
+    // total summary
+    const totalSpent = expenses
+      .filter((e) => e.type === "spent")
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    const totalReceived = expenses
+      .filter((e) => e.type === "received")
+      .reduce((sum, e) => sum + e.amount, 0);
+
+    res.status(200).json({
+      status: 1,
+      message: "Filtered Expenses",
+      data: expenses,
+      summary: {
+        totalSpent,
+        totalReceived,
+        balance: totalReceived - totalSpent,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 0,
+      message: "Error filtering expenses",
+      error: err.message,
+    });
+  }
+};
+
+
+// const expenseInsert = async (req, res) => {
+//   try {
+//     const { amount, category, date } = req.body;
+//     const expense = new Expense({ 
+//       amount, 
+//       category, 
+//       date, 
+//       user: req.user.id // associate expense with logged-in user
+//     });
+//     const data = await expense.save();
+
+//     res.status(200).json({
+//       status: 1,
+//       message: "Expense added successfully",
+//       data,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       status: 0,
+//       message: "Error adding expense",
+//       error: err.message,
+//     });
+//   }
+// };
 
 // Delete Expense
 const expenseDelete = async (req, res) => {
@@ -74,4 +169,4 @@ const expenseView = async (req, res) => {
   }
 };
 
-module.exports = { expenseInsert, expenseDelete, expenseView };
+module.exports = { expenseInsert, expenseDelete, expenseView ,expenseFilter};
