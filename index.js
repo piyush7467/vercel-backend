@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 const cookieParser = require("cookie-parser");
-app.use(cookieParser());
+
 
 
 const expenseRouter = require("./App/routes/expenseRoutes.js");
@@ -17,6 +17,7 @@ app.use(cors({
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
+app.use(cookieParser());
 
 app.use(express.json());
 
