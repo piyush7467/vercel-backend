@@ -112,4 +112,35 @@ const logout = (req, res) => {
   }
 };
 
-module.exports = { signup, login, logout };
+
+// Get logged-in user (ME)
+const getMe = async (req, res) => {
+  try {
+    // req.user is set by authMiddleware after JWT verification
+    const user = await User.findById(req.user.id).select("_id name email");
+
+    if (!user) {
+      return res.status(404).json({
+        authenticated: false,
+        message: "User not found"
+      });
+    }
+
+    return res.status(200).json({
+      authenticated: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      authenticated: false,
+      message: "Failed to fetch user"
+    });
+  }
+};
+
+module.exports = { signup, login, logout, getMe };
