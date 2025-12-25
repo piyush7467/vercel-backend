@@ -3,7 +3,8 @@ let Schema=mongoose.Schema;
 let UserSchema=new Schema({
     name:{
         type:String,
-        required:true
+        required:true,
+        minlength:3
     },
     email:{
         type:String,

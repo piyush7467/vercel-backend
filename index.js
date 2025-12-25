@@ -2,6 +2,9 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 
 const expenseRouter = require("./App/routes/expenseRoutes.js");
 const userRouter = require("./App/routes/userRoute.js");
@@ -14,6 +17,7 @@ app.use(cors({
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
 }));
+
 app.use(express.json());
 
 // ✅ MongoDB Connection Function (Auto-Reconnect)
