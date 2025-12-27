@@ -1,4 +1,5 @@
-const Expense = require("../models/models.js"); 
+
+const Expense = require('../models/models.js')
 
 // Insert Expense
 
