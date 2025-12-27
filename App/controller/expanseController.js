@@ -1,4 +1,4 @@
-const Expense = require("../models/models.js"); // make sure this path is correct
+const Expense = require("../models/models.js"); 
 
 // Insert Expense
 
@@ -95,31 +95,6 @@ const expenseFilter = async (req, res) => {
   }
 };
 
-
-// const expenseInsert = async (req, res) => {
-//   try {
-//     const { amount, category, date } = req.body;
-//     const expense = new Expense({ 
-//       amount, 
-//       category, 
-//       date, 
-//       user: req.user.id // associate expense with logged-in user
-//     });
-//     const data = await expense.save();
-
-//     res.status(200).json({
-//       status: 1,
-//       message: "Expense added successfully",
-//       data,
-//     });
-//   } catch (err) {
-//     res.status(500).json({
-//       status: 0,
-//       message: "Error adding expense",
-//       error: err.message,
-//     });
-//   }
-// };
 
 // Delete Expense
 const expenseDelete = async (req, res) => {
