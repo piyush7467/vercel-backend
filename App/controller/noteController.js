@@ -22,6 +22,14 @@ const createNote = async (req, res) => {
       specialTitle: contextType === "special" ? specialTitle : undefined,
     });
 
+    if (contextType === "special" && !specialTitle) {
+      return res.status(400).json({
+        status: 0,
+        message: "specialTitle is required for special notes",
+      });
+    }
+
+
     await note.save();
 
     res.status(201).json({
