@@ -1,84 +1,65 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
+require("dotenv").config();
 const cookieParser = require("cookie-parser");
 
-dotenv.config();
 
-const expenseRouter = require("./App/routes/expenseRoutes");
-const userRouter = require("./App/routes/userRoute");
+
+const expenseRouter = require("./App/routes/expenseRoutes.js");
+const userRouter = require("./App/routes/userRoute.js");
 
 const app = express();
 
-
-// =======================
-// CORS Configuration
-// =======================
-
-const corsOptions = {
-  origin: "https://expense-tracker-daily.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+// ✅ Middleware
+app.use(cors({
+  origin: "https://expense-tracker-daily.vercel.app", // frontend URL
+  methods: ["GET", "POST", "DELETE"],
   credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-
-// =======================
-// Middleware
-// =======================
-
-app.use(express.json());
+}));
 app.use(cookieParser());
 
+app.use(express.json());
 
-// =======================
-// MongoDB Connection
-// =======================
+// ✅ MongoDB Connection Function (Auto-Reconnect)
+const connectDB = async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      return; // already connected
+    }
+    await mongoose.connect(process.env.dbUrl, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB error:", err.message);
+  }
+};
 
-mongoose
-  .connect(process.env.dbUrl)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
-  })
-  .catch((err) => {
-    console.log("❌ MongoDB Error:", err.message);
-  });
+// ✅ Ensure DB connection before routes
+app.use(async (req, res, next) => {
+  await connectDB();
+  next();
+});
 
-
-// =======================
-// Routes
-// =======================
-
+// ✅ Routes
 app.use("/api/expense", expenseRouter);
 app.use("/api/user", userRouter);
 
-
-// =======================
-// Health Check Route
-// =======================
-
+// ✅ Health Check Route
 app.get("/", (req, res) => {
-  res.status(200).send("✅ Backend is live");
+  res.send("✅ Backend is live and connected to MongoDB");
 });
 
-
-// =======================
-// Export for Vercel
-// =======================
-
+// ✅ Export app for Vercel
 module.exports = app;
 
-
-// =======================
-// Local Development
-// =======================
-
+// ✅ Local run (only when NODE_ENV=development)
 if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 8000;
-
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  const PORT = process.env.port || 8000;
+  app.listen(PORT, async () => {
+    await connectDB(); // connect at startup
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
 }
