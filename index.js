@@ -12,11 +12,22 @@ const userRouter = require("./App/routes/userRoute.js");
 const app = express();
 
 // ✅ Middleware
-app.use(cors({
-  origin: "https://expense-tracker-daily.vercel.app", // frontend URL
-  methods: ["GET", "POST", "DELETE"],
+// app.use(cors({
+//   origin: "https://expense-tracker-daily.vercel.app", // frontend URL
+//   methods: ["GET", "POST", "DELETE"],
+//   credentials: true,
+// }));
+
+const corsOptions = {
+  origin: "https://expense-tracker-daily.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+
 app.use(cookieParser());
 
 app.use(express.json());
